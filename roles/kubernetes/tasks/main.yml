@@ -1,0 +1,29 @@
+---
+# tasks file for kubernetes
+- name: Disable swap
+  shell: sudo swapoff -a
+- name: Install Docker
+  yum: name=docker state=installed
+- name: Start docker and Enable
+  service:
+       name: docker
+       state: started
+       enabled: yes
+- name: setup kubernetes repo
+  template: src=kubernetes.repo.j2 dest=/etc/yum.repos.d/
+- name: disable selinux
+  shell: setenforce 0
+- name: install kubelet kubeadm
+  shell: yum install -y kubelet kubeadm
+- name: start kubelet service
+  service:
+      name: kubelet
+      state: started
+      enabled: yes
+- name: configure kernel setting
+  template: src=kernel.j2 dest=/etc/sysctl.d/k8.conf
+- name: enable kernel settings
+  shell: sudo sysctl --system
+- name: join node to cluster
+  shell: sudo kubeadm join 192.168.10.28:6443 --token m88f3i.77nj23u1lzuk1vgb --discovery-token-ca-cert-hash sha256:0ce599e36b085a56bfd6b770626867c6dae12ca141accf352c110a6d1487e548
+ 
